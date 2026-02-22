@@ -1,9 +1,8 @@
-local amethyst = {
+getgenv().amethyst = {
     ['Aimbot'] = {
         ['Enabled']       = true,
         ['FOV']           = 120,
         ['PreciseMouse']  = false,
-
         ['Easing']        = 'Circular',
         ['Smoothness']    = 0.5,
     },
@@ -11,7 +10,6 @@ local amethyst = {
     ['Triggerbot'] = {
         ['Enabled']       = true,
         ['RequireTool']   = true,
-
         ['HoldTime']      = 0,
         ['Cooldown']      = 0
     },
@@ -23,4 +21,4 @@ local amethyst = {
     }
 }
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/tingoman/ml/refs/heads/main/ddddddddddddd.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tingoman/ml/main/ddddddddddddd.lua"))()
