@@ -326,7 +326,7 @@ local function triggerbotFire()
     if not triggerbotState.CanFire then return end
     if not hasToolEquipped() then return end
 
-    -- In FFA place: don't fire if the local player themselves has a forcefield
+    --// ffa
     if game.PlaceId == 85788627530413 and amethyst['Checks']['CheckForceField'] then
         local localChar = LocalPlayer.Character
         if localChar and localChar:FindFirstChildOfClass("ForceField") then return end
@@ -376,7 +376,6 @@ local function aimbotUpdate()
     end
 end
 
--- Main update function for render step
 local function onRenderStep()
     if amethyst['Aimbot']['Enabled'] then
         aimbotUpdate()
