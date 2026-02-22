@@ -140,6 +140,27 @@
 
 
 
+getgenv().amethyst = {
+    ['Aimbot'] = {
+        ['Enabled']       = true,
+        ['FOV']           = 120,
+        ['PreciseMouse']  = false,
+        ['Easing']        = 'Circular',
+        ['Smoothness']    = 0.05,
+    },
+    ['Triggerbot'] = {
+        ['Enabled']       = true,
+        ['RequireTool']   = true,
+        ['HoldTime']      = 0,
+        ['Cooldown']      = 0
+    },
+    ['Checks'] = {
+        ['IgnoreDead']      = true,
+        ['CheckTeam']       = true,
+        ['CheckForceField'] = true,
+    }
+}
+
 local Players            = game:GetService("Players")
 local RunService         = game:GetService("RunService")
 local UIS                = game:GetService("UserInputService")
@@ -201,6 +222,26 @@ setmetatable(GameInformation, {
 })
 table.freeze(GameInformation)
 
+local isHoodCustoms = GameInformation.name:lower():find("hood customs") ~= nil
+
+local function IsKnocked(player)
+    if not player or not player.Character then return false end
+    local be = player.Character:FindFirstChild("BodyEffects")
+    if not be then return false end
+    local ko = be:FindFirstChild("K.O")
+    return ko and ko.Value or false
+end
+
+local function IsGrabbed(player)
+    if not player or not player.Character then return false end
+    return player.Character:FindFirstChild("GRABBING_CONSTRAINT") ~= nil
+end
+
+local function HasForcefield(player)
+    if not player or not player.Character then return false end
+    return player.Character:FindFirstChild("Forcefield") ~= nil
+end
+
 local function getEasedDelta(delta, easingStyle)
     local alpha = TweenService:GetValue(1, Enum.EasingStyle[easingStyle], Enum.EasingDirection.Out)
     return delta * alpha
@@ -209,44 +250,51 @@ end
 local function isPlayerValid(player)
     if not player or not player.Character then return false end
 
-    if amethyst['Checks']['IgnoreDead'] then
-        local humanoid = player.Character:FindFirstChildWhichIsA("Humanoid")
-        if not humanoid then return false end
+    if isHoodCustoms then
+        if IsKnocked(player) then return false end
+        if IsGrabbed(player) then return false end
+        if HasForcefield(player) then return false end
+        if IsKnocked(LocalPlayer) then return false end
+    else
+        if amethyst['Checks']['IgnoreDead'] then
+            local humanoid = player.Character:FindFirstChildWhichIsA("Humanoid")
+            if not humanoid then return false end
 
-        if humanoid.Health <= 0 or humanoid:GetState() == Enum.HumanoidStateType.Dead then
-            return false
+            if humanoid.Health <= 0 or humanoid:GetState() == Enum.HumanoidStateType.Dead then
+                return false
+            end
         end
-    end
 
-    if amethyst['Checks']['CheckTeam'] and game.PlaceId ~= 85788627530413 then
-        local gameName = GameInformation.name:lower()
+        if amethyst['Checks']['CheckTeam'] and game.PlaceId ~= 85788627530413 then
+            local gameName = GameInformation.name:lower()
 
-        if gameName:find("bronx") and gameName:find("duels") then
-            if player.Character:FindFirstChildOfClass("Highlight") then
-                local localChar = LocalPlayer.Character
-                if localChar and localChar:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("HumanoidRootPart") then
-                    local dist = (player.Character.HumanoidRootPart.Position - localChar.HumanoidRootPart.Position).Magnitude
-                    if dist <= 75 then
+            if gameName:find("bronx") and gameName:find("duels") then
+                if player.Character:FindFirstChildOfClass("Highlight") then
+                    local localChar = LocalPlayer.Character
+                    if localChar and localChar:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = (player.Character.HumanoidRootPart.Position - localChar.HumanoidRootPart.Position).Magnitude
+                        if dist <= 75 then
+                            return false
+                        end
+                    else
                         return false
                     end
-                else
+                end
+            else
+                if LocalPlayer.Team and player.Team and LocalPlayer.Team == player.Team then
+                    return false
+                end
+
+                if LocalPlayer.TeamColor and player.TeamColor and LocalPlayer.TeamColor == player.TeamColor then
                     return false
                 end
             end
-        else
-            if LocalPlayer.Team and player.Team and LocalPlayer.Team == player.Team then
-                return false
-            end
-
-            if LocalPlayer.TeamColor and player.TeamColor and LocalPlayer.TeamColor == player.TeamColor then
-                return false
-            end
         end
-    end
 
-    if amethyst['Checks']['CheckForceField'] and player.Character then
-        if player.Character:FindFirstChildOfClass("ForceField") then
-            return false
+        if amethyst['Checks']['CheckForceField'] and player.Character then
+            if player.Character:FindFirstChildOfClass("ForceField") then
+                return false
+            end
         end
     end
 
@@ -268,6 +316,8 @@ local function getClosestVisiblePlayer()
 
             local head = character:FindFirstChild("Head")
             if not head then continue end
+
+            if isHoodCustoms and head.Transparency >= 0.5 then continue end
 
             local headScreen, headOnScreen = Camera:WorldToViewportPoint(head.Position)
             if headOnScreen then
@@ -322,11 +372,22 @@ local function hasToolEquipped()
     return character:FindFirstChildOfClass("Tool") ~= nil
 end
 
+local function hasKnifeEquipped()
+    local character = LocalPlayer.Character
+    if not character then return false end
+
+    local tool = character:FindFirstChildOfClass("Tool")
+    if not tool then return false end
+
+    return tool.Name:lower():find("knife") ~= nil
+end
+
 local function triggerbotFire()
     if not triggerbotState.CanFire then return end
     if not hasToolEquipped() then return end
 
-    --// ffa
+    if isHoodCustoms and hasKnifeEquipped() then return end
+
     if game.PlaceId == 85788627530413 and amethyst['Checks']['CheckForceField'] then
         local localChar = LocalPlayer.Character
         if localChar and localChar:FindFirstChildOfClass("ForceField") then return end
