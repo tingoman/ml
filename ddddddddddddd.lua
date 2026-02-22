@@ -386,11 +386,8 @@ local function onRenderStep()
         triggerbotFire()
     end
 end
-
--- Bind to render step with priority Camera - 1
 RunService:BindToRenderStep("AmethystAimbot", Enum.RenderPriority.Camera.Value - 1, onRenderStep)
 
--- Add to connections for cleanup
 table.insert(connections, {
     Disconnect = function()
         RunService:UnbindFromRenderStep("AmethystAimbot")
